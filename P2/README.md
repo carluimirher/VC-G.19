@@ -43,7 +43,7 @@ El aislamiento del color se realiza en el espacio de color HSV (*Hue, Saturation
 
 ---
 
-## 1. Inicialización de Parámetros y Calibración del Rango de Color
+#### 1. Inicialización de Parámetros y Calibración del Rango de Color
 
 Antes de iniciar el bucle principal, se configuran las propiedades cinemáticas de la pelota (radio, posición inicial, velocidad y radio de seguridad/repulsión) y los umbrales de segmentación cromática en HSV para el tono azul:
 
@@ -68,7 +68,7 @@ azul_alto = np.array([130, 255, 255])
 
 ---
 
-## 2. Captura, Efecto Espejo y Segmentación Cromática
+#### 2. Captura, Efecto Espejo y Segmentación Cromática
 
 En cada iteración del flujo de video:
 1. Se aplica una inversión horizontal (`cv2.flip(frame, 1)`) para generar un modo espejo, facilitando la interacción natural del usuario.
@@ -90,7 +90,7 @@ if ret:
 
 ---
 
-## 3. Estimación de la Posición del Objeto mediante Proyecciones Marginales
+#### 3. Estimación de la Posición del Objeto mediante Proyecciones Marginales
 
 Para localizar el centroide del objeto sin requerir análisis de contornos costosos:
 - Se calculan las sumas marginales (proyecciones) en filas (eje Y) y columnas (eje X).
@@ -124,7 +124,7 @@ Para localizar el centroide del objeto sin requerir análisis de contornos costo
 
 ---
 
-## 4. Dinámica de Repulsión, Fricción y Detección de Colisiones con los Bordes
+#### 4. Dinámica de Repulsión, Fricción y Detección de Colisiones con los Bordes
 
 1. Fuerza de repulsión: Se evalúa el vector desplazamiento entre el objeto y la esfera (dx, dy) y su distancia euclídea:
    $$\text{distancia} = \sqrt{dx^2 + dy^2}$$
@@ -170,7 +170,7 @@ Para localizar el centroide del objeto sin requerir análisis de contornos costo
 
 ---
 
-## 5. Renderizado
+#### 5. Renderizado
 
 Finalmente, se dibuja la esfera virtual en sus coordenadas actuales y se presentan ambas ventanas: la vista procesada con la interfaz del juego y la máscara binaria resultante.
 
