@@ -25,7 +25,7 @@ Este código utiliza la cámara en tiempo real para detectar monedas, medir sus 
 Para esta tarea, se le preguntó a la Inteligencia Artificial ChatGPT sobre cómo se podría detectar un click dentro de uno de los contornos:
 https://chatgpt.com/share/6ad90de0-f130-83ed-82e9-e888653a2903
 
-# Tarea 2: Detección y Clasificación de Microplásticos mediante Visión por Computador y Random Forest
+# Tarea 2: Detección y Clasificación de Microplásticos
 
 ## Descripción General
 Esta práctica aborda la detección, caracterización morfológica y clasificación automática de partículas contaminantes marinas (microplásticos y residuos) divididas en tres categorías principales:
