@@ -1,5 +1,5 @@
 # Tarea 1: Detección y conteo del valor de las monedas
-### Autores: Alejandro David Fariña Afonso y 
+### Autores: Alejandro David Fariña Afonso y Carlos Luis Miranda Hernández
 
 Este código utiliza la cámara en tiempo real para detectar monedas, medir sus diámetros y clasificarlas según su valor en euros. Para ello, se selecciona una moneda de referencia de 1 €, que permite calcular la escala de conversión de píxeles a milímetros. Finalmente, se muestra el valor de cada moneda detectada y se calcula la suma total del dinero y se muestra por pantalla.
 
