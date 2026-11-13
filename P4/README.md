@@ -132,7 +132,7 @@ A partir de los registros de entrenamiento (`results.csv`) y la evaluación fina
 
 #### Gráficas Comparativas de Entrenamiento (YOLO vs RT-DETR)
 <div align="center">
-  <img src="graficas.png" alt="Comparativa de Entrenamiento YOLO vs RT-DETR" width="90%" style="border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+  <img src="images/graficas.png" alt="Comparativa de Entrenamiento YOLO vs RT-DETR" width="90%" style="border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
   <p><sub><i><b>Figura 1:</b> Evolución de la Función de Pérdida, mAP@50, mAP@50-95 y curvas de Precisión/Recall a lo largo de 100 épocas.</i></sub></p>
 </div>
 
