@@ -3,7 +3,7 @@
 **Asignatura:** Visión por Computador  
 **Titulación:** Grado en Grado en Ingeniería Informática — ULPGC  
 **Grupo:** G19  
-**Autores:** Alejandro David Fariña Afonso y
+**Autores:** Alejandro David Fariña Afonso y Carlos Luis Miranda Hernández
 
 ---
 
@@ -12,8 +12,9 @@
 1. [Entrenamiento del modelo YOLO con matrículas para su detección](#1-entrenamiento-del-modelo-yolo-con-matrículas-para-su-detección)
 2. [Aplicación del modelo personalizado al vídeo: coches, personas y matrículas](#2-aplicación-del-modelo-personalizado-al-vídeo-coches-personas-y-matrículas)
 3. [Entrenamiento del modelo RT-DETR y comparativa frente a YOLO](#3-entrenamiento-del-modelo-rt-detr-y-comparativa-frente-a-yolo)
-4. [Resolución integral de todos los extras](#4-resolución-integral-de-todos-los-extras)
-5. [Dataset](#5-dataset)
+4. [Comparativa de Reconocimiento Alfanumérico: EasyOCR frente a SmolVLM](#4-comparativa-de-reconocimiento-alfanumérico-easyocr-frente-a-smolvlm)
+5. [Resolución integral de todos los extras](#5-resolución-integral-de-todos-los-extras)
+6. [Dataset](#6-dataset)
 
 ---
 
@@ -145,7 +146,51 @@ Aunque ambos modelos convergen hacia un rendimiento general muy parejo y altamen
 ### Observaciones:
 * Aunque las métricas cuantitativas en la carpeta de test revelan un rendimiento global muy parecido entre ambos modelos (mAP@50 de ~77%), la evaluación en vídeo evidencia que RT-DETR-Large ofrece una detección más efectiva gracias a su mayor capacidad para capturar las matrículas difíciles.
 
-## 4. Resolución integral de todos los extras
+---
+
+## 4. Comparativa de Reconocimiento Alfanumérico: EasyOCR frente a SmolVLM
+
+### 4.1 Enfoques de Reconocimiento Evaluados
+Para la extracción del texto alfanumérico contenido en las regiones de matrícula detectadas, se integraron y compararon dos metodologías diferentes:
+
+1. **Pipeline Clásico de OCR (`EasyOCR`):** Basado en detección de caracteres tradicional combinada con redes convolucionales/recurrentes (`easyocr.Reader(['es', 'en'], gpu=True)`).
+2. **Modelo Vision-Language (`SmolVLM`):** Modelo multimodal autoregresivo de 256 millones de parámetros (`HuggingFaceTB/SmolVLM-256M-Instruct`), que aborda la lectura mediante procesamiento guiado por instrucciones en lenguaje natural.
+
+### 4.2 Estrategias de Preprocesamiento y Postprocesamiento
+
+#### Pipeline con EasyOCR
+* **Preprocesamiento por Variantes de Imagen:** Se implementó un generador en cascada (`variantes_ocr`) que evalúa secuencialmente sobre el recorte ajustado: imagen original reescalada ($\text{alto} \ge 96\text{ px}$), realce de contraste adaptativo mediante CLAHE (`clipLimit=2.0`, `tileGridSize=(4,4)`), y binarización adaptativa mediante el algoritmo de Otsu.
+* **Segmentación de Matrículas de Dos Filas:** La función `separar_filas()` detecta placas cuadradas ($\text{ancho}/\text{alto} < 2.2$), calcula el perfil de densidad vertical de tinta sobre el 80% central del ancho y realiza un corte horizontal en el mínimo de densidad entre el 35% y el 65% de la altura.
+* **Corrección Posicional Sintáctica:** El texto extraído se valida con la expresión regular `([0-9OQDILSZEAGBT]{4})([0-9OIZEA5G7BP]{3})` y se somete a sustitución posicional estricta:
+  * *Posiciones 0–3 (Números):* `digit_map = {'O':'0', 'Q':'0', 'D':'0', 'I':'1', 'L':'1', 'Z':'2', 'E':'3', 'A':'4', 'S':'5', 'G':'6', 'B':'8', 'T':'7'}`.
+  * *Posiciones 4–6 (Letras):* `letter_map = {'0':'O', '1':'I', '2':'Z', '3':'E', '4':'A', '5':'S', '6':'G', '7':'T', '8':'B', '9':'P'}`.
+
+#### Pipeline con SmolVLM
+* **Inferencia Visual Directa:** El recorte BGR de OpenCV se convierte a espacio de color RGB de PIL (`Image.fromarray`). Se estructura una plantilla de conversación (`apply_chat_template`) con inferencia en precisión `torch.float16` en GPU.
+* **Prompting Instructivo:**
+  ```python
+  PROMPT = (
+      "Read the vehicle license plate. Return only the letters and digits, without "
+      "explanation. For two rows, read the top row first, then the bottom row. "
+      "If unreadable, return an empty string."
+  )
+  ```
+* **Postprocesamiento:** Filtrado alfanumérico mediante `re.sub(r'[^A-Z0-9]', '', texto.upper())` extrayendo los 7 caracteres alfanuméricos consolidados.
+
+### 4.3 Cuadro Comparativo de Integración y Inferencia
+
+| Característica | Pipeline EasyOCR | Pipeline SmolVLM (256M) |
+| :--- | :--- | :--- |
+| **Arquitectura** | Motor OCR profundo tradicional | Vision-Language Model (VLM) Transformers |
+| **Tratamiento Doble Fila** | Segmentación explícita mediante densidad de tinta | Tratamiento implícito vía prompt (*"read top row first..."*) |
+| **Robustez ante Iluminación** | Requiere transformaciones explícitas (CLAHE / Otsu) | Tolerancia inherente a variaciones de contraste |
+| **Postprocesamiento** | Mapeo de sustitución posicional estricto (Números vs Letras) | Filtrado sintáctico alfanumérico simple |
+| **Manejo de Errores** | Retorna `"OCR_ERROR"` ante fallos sintácticos | Retorna `"OCR_ERROR"` si la cadena resulta $< 7$ caracteres |
+| **Consumo y Carga** | Muy ligero en VRAM y rápida ejecución en batch | Mayor ocupación de VRAM y tiempo de generación (`generate`) |
+
+---
+
+## 5. Resolución integral de todos los extras
 
 En esta sección se resuelven conjuntamente todas las funcionalidades extras planteadas en el enunciado en una única arquitectura de procesamiento de vídeo:
 
@@ -177,7 +222,7 @@ En esta sección se resuelven conjuntamente todas las funcionalidades extras pla
                                        Fondo / Izquierda / Derecha ]
 ```
 
-### 4.1 Detección de Matrículas mediante Contornos y Visión Clásica (+0.25p)
+### 5.1 Detección de Matrículas mediante Contornos y Visión Clásica (+0.25p)
 Como alternativa a los modelos de *Deep Learning*, la función `detect_plate_contours()` procesa el tercio inferior de cada recorte de vehículo mediante dos ramas paralelas de filtrado:
 * **Rama A (Morfología Matemática ALPR):** Aplica la transformación *Black-Hat* para resaltar estructuras oscuras sobre fondos claros, extrae el gradiente horizontal con el operador Sobel en $X$, ejecuta un cierre morfológico rectangular `(15, 5)` para conectar los caracteres de la matrícula y binariza mediante el algoritmo de Otsu guiado por una máscara de luminancia HSV.
 * **Rama B (Bordes y Detección de Contornos):** Reduce el ruido preservando bordes mediante filtrado bilateral, calcula bordes con Canny adaptativo basado en la mediana de la imagen y cierra discontinuidades con un elemento estructurante `(3, 3)`.
@@ -188,7 +233,7 @@ Como alternativa a los modelos de *Deep Learning*, la función `detect_plate_con
   * *Centralidad Espacial:* Pondera positivamente que la placa esté alineada con el eje horizontal central del vehículo.
 * **Fusión por IoU y Memoria Temporal:** Si los mejores contornos de ambas ramas coinciden espacialmente ($\text{IoU} > 0.45$), se incrementa la confianza final. Además, un diccionario de persistencia temporal (`plate_memory`) mantiene la localización de la placa frente a vibraciones u oclusiones momentáneas.
 
-### 4.2 Análisis del Flujo de Tráfico Direccional (+0.25p)
+### 5.2 Análisis del Flujo de Tráfico Direccional (+0.25p)
 La función `analyze_flow()` determina la dirección por la que personas y vehículos abandonan el plano visible:
 * **Vector de Desplazamiento:** Mantiene un historial deslizante de posiciones (`track_history`) para cada identificador y calcula el vector de movimiento neto:
   $$\Delta x = cx_{\text{actual}} - cx_{\text{inicio}}, \quad \Delta y = cy_{\text{actual}} - cy_{\text{inicio}}$$
@@ -199,12 +244,12 @@ La función `analyze_flow()` determina la dirección por la que personas y vehí
 * **Recuento Único:** Un conjunto de control (`counted_ids`) asegura que cada objeto compute una única vez en el panel global `flow_counts`.
 
 
-### 4.3 Anonimización Dinámica en Tiempo Real (+0.25p)
+### 5.3 Anonimización Dinámica en Tiempo Real (+0.25p)
 La función `anonymize_roi()` preserva la privacidad en el vídeo mediante dos técnicas diferenciadas según la naturaleza del objeto:
 * **Personas (Pixelado):** Para evitar la identificación facial y corporal, se reduce la región de interés a una décima parte de su tamaño original y se reescala a las dimensiones iniciales mediante interpolación por vecinos más próximos (`cv2.INTER_NEAREST`).
 * **Vehículos / Matrículas (Desenfoque Gaussiano):** Sobre la caja delimitadora devuelta por el localizador de matrículas se aplica un desenfoque gaussiano suave con núcleo proporcional a las dimensiones de la placa, impidiendo la lectura del texto sin degradar la visibilidad general del vehículo.
 
-### 4.4 Salidas y Resultados Multimedia
+### 5.4 Salidas y Resultados Multimedia
 
 #### [Resolución con Todos los Extras](https://youtu.be/hlJT4Kkg96c) 
 ---
@@ -214,7 +259,7 @@ La función `anonymize_roi()` preserva la privacidad en el vídeo mediante dos t
 
 ---
 
-## 5. Dataset
+## 6. Dataset
 
 
 ### Enlaces y Créditos
