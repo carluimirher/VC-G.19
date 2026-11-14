@@ -196,7 +196,7 @@ Para la extracción del texto alfanumérico contenido en las regiones de matríc
 
 [Vídeo de Salida: Detección y Seguimiento con Modelo RT-DETR usando OCR](https://youtu.be/u9FenNvnF3s)
 
-[Vídeo de Salida: Detección y Seguimiento con Modelo RT-DETR usando VLM]()
+[Vídeo de Salida: Detección y Seguimiento con Modelo RT-DETR usando VLM](https://youtu.be/xtdP-ryee5Q)
 
 
 
