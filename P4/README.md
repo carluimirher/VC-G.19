@@ -188,6 +188,18 @@ Para la extracción del texto alfanumérico contenido en las regiones de matríc
 | **Manejo de Errores** | Retorna `"OCR_ERROR"` ante fallos sintácticos | Retorna `"OCR_ERROR"` si la cadena resulta $< 7$ caracteres |
 | **Consumo y Carga** | Muy ligero en VRAM y rápida ejecución en batch | Mayor ocupación de VRAM y tiempo de generación (`generate`) |
 
+### 4.4 Inferencia en Vídeo con YOLO
+
+[Vídeo de Salida: Detección y Seguimiento con Modelo YOLO usando OCR](https://youtu.be/eGes9XXstZs)
+
+[Vídeo de Salida: Detección y Seguimiento con Modelo YOLO usando VLM](https://youtu.be/aJY7KZxR9-Y)
+
+[Vídeo de Salida: Detección y Seguimiento con Modelo RT-DETR usando OCR](https://youtu.be/u9FenNvnF3s)
+
+[Vídeo de Salida: Detección y Seguimiento con Modelo RT-DETR usando VLM]()
+
+
+
 ---
 
 ## 5. Resolución integral de todos los extras
